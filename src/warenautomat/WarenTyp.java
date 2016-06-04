@@ -48,4 +48,12 @@ public class WarenTyp
     return m_nPreis;
   }
   
+  /**
+   * Setter für den Preis
+   * @param i_nPreis
+   */
+  public void Preis(int i_nPreis)
+  {
+    m_nPreis = i_nPreis;
+  }
 }

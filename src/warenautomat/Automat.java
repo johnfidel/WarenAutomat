@@ -2,6 +2,7 @@ package warenautomat;
 
 import java.util.*;
 import java.util.Date;
+import warenautomat.*;
 
 /**
  * Der Automat besteht aus 7 Drehtellern welche wiederum je aus 16 Fächer
@@ -17,14 +18,25 @@ public class Automat {
   private Kasse mKasse;
 
   /**
+   * Hier werden alle Warentypen gespeichert.
+   */
+  private WarenTypSammlung m_oAlleWarentypen;
+  
+  
+  /**
    * Der Standard-Konstruktor. <br>
    * Führt die nötigen Initialisierungen durch (u.a. wird darin die Kasse
    * instanziert).
    */
   public Automat() {
     
-    // TODO 
-    
+    // Drehteller initialisieren
+    mDrehteller = new Drehteller[NR_DREHTELLER];
+    // alle Drehtellepositionen mit einem Drehteller initialisieren
+    for (int i = 0; i < mDrehteller.length; i++)
+    {
+      mDrehteller[i] = new Drehteller();
+    }
   }
 
   /**
@@ -44,9 +56,27 @@ public class Automat {
    * @param pVerfallsDatum Das Verfallsdatum der neuen Ware.
    */
   public void fuelleFach(int pDrehtellerNr, String pWarenName, double pPreis,
-      Date pVerfallsDatum) {
-    
-    // TODO
+      Date pVerfallsDatum) 
+  {
+    // preis zuerst umwandeln
+    int nPreis = (int)Math.round(pPreis * 100.0);
+      
+    // prüfen ob es diesen Warentypen bereits in der Sammlung gibt.
+    WarenTyp typ = m_oAlleWarentypen.SucheWarenTyp(pWarenName);
+    if (typ != null)
+    {
+      // es wurde ein bereits angelegter Warentyp gefunden.
+      typ.Preis(nPreis);
+    }
+    else
+    {
+      // es gibt noch keinen solchen warentyp. neuen erzeugen
+      typ = new WarenTyp(pWarenName, nPreis);
+      m_oAlleWarentypen.AddWarenTyp(typ);
+    }
+       
+    // das aktuelle Fach füllen
+    mDrehteller[pDrehtellerNr].FuelleFach(new Ware(typ, pVerfallsDatum);
     
   }
 
@@ -67,9 +97,14 @@ public class Automat {
    * Die System-Software stellt sicher, dass <em> drehen </em> nicht durchgeführt wird
    * wenn ein Fach offen ist.
    */
-  public void drehen() {
+  public void drehen() 
+  {
     
-    // TODO
+    // alle Teller drehen
+    for (Drehteller teller: mDrehteller)
+    {
+      teller.Drehen();
+    }
     
   }
 
