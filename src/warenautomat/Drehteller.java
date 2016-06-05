@@ -4,7 +4,7 @@ package warenautomat;
 import java.util.Date;
 import java.util.*;
 
-import warenautomat.*;
+import warenautomat.Fach;
 import warenautomat.SystemSoftware;
 
 /**
@@ -39,15 +39,6 @@ public class Drehteller
     {
       m_oFaecher[i] = new Fach();
     }
-  }
-  
-  /**
-   * Mit dieser Funktion wird das Fach vor der Tuer geöffnet, falls dies erlaubt ist.
-   * @return
-   */
-  public Boolean Oeffnen();
-  {
-    // TODO prüfen ob das aktuelle Fach geöffnet werden darf
   }
   
   /**

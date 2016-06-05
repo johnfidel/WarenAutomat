@@ -12,15 +12,54 @@ import warenautomat.SystemSoftware;
  * - 1 Franken <br>
  * - 2 Franken <br>
  */
-public class Kasse {
+public class Kasse 
+{
 
+  private static final int POSITION_MUENZWERT_10RAPPEN = 0;
+  private static final int POSITION_MUENZWERT_20RAPPEN = 1;
+  private static final int POSITION_MUENZWERT_50RAPPEN = 2;
+  private static final int POSITION_MUENZWERT_100RAPPEN = 3;
+  private static final int POSITION_MUENZWERT_200RAPPEN = 4;
+  
+  private static final int MUENZWERT_10RAPPEN = 10;
+  private static final int MUENZWERT_20RAPPEN = 20;
+  private static final int MUENZWERT_50RAPPEN = 50;
+  private static final int MUENZWERT_100RAPPEN = 100;
+  private static final int MUENZWERT_200RAPPEN = 200;
+ 
+  /**
+   * Diese Funktion liefert den Platz welcher in einer Säule verlbeibt.
+   * @param i_nMuenzSaulenIdx: der Index der Säule
+   *        0: -.10
+   *        1: -.20
+   *        2: -.50
+   *        3: -.100
+   *        4: -.200
+   * @return Der verbleibende Platz in der Münzsäule
+   */
+  private int pruefePlatzInSaeule(int i_nMuenzSaulenIdx)
+  {
+    return (m_oMuenzSaeulen[i_nMuenzSaulenIdx].Kapazitaet() - m_oMuenzSaeulen[i_nMuenzSaulenIdx].Fuellstand());
+  }
+  
+  /**
+   * Dies ist ein Array welches alle Münzsäulen enthält
+   */
+  private MuenzSaeule[] m_oMuenzSaeulen;
+  
   /**
    * Standard-Konstruktor. <br>
    * Führt die nötigen Initialisierungen durch.
    */
-  public Kasse() {
+  public Kasse() 
+  {
     
-    // TODO
+    // eine Säule für jeden Münzwert erstellen
+    m_oMuenzSaeulen[POSITION_MUENZWERT_10RAPPEN] = new MuenzSaeule(MUENZWERT_10RAPPEN);
+    m_oMuenzSaeulen[POSITION_MUENZWERT_20RAPPEN] = new MuenzSaeule(MUENZWERT_20RAPPEN);
+    m_oMuenzSaeulen[POSITION_MUENZWERT_50RAPPEN] = new MuenzSaeule(MUENZWERT_50RAPPEN);
+    m_oMuenzSaeulen[POSITION_MUENZWERT_100RAPPEN] = new MuenzSaeule(MUENZWERT_100RAPPEN);
+    m_oMuenzSaeulen[POSITION_MUENZWERT_200RAPPEN] = new MuenzSaeule(MUENZWERT_200RAPPEN);
     
   }
 
@@ -37,10 +76,42 @@ public class Kasse {
    *         Platz haben werden, als negative Zahl (z.B. -20). <br>
    *         Wenn ein nicht unterstützter Münzbetrag übergeben wurde: -200
    */
-  public int fuelleKasse(double pMuenzenBetrag, int pAnzahl) {
+  public int fuelleKasse(double pMuenzenBetrag, int pAnzahl) 
+  {
+    int nMuenzBetrag = (int)(Math.round(pMuenzenBetrag * 100.0));
+    int nPlatz;
+    int nSelektierteSaeule;
     
-    return 0; // TODO
+    switch (nMuenzBetrag)
+    {
+      case MUENZWERT_10RAPPEN: nSelektierteSaeule = POSITION_MUENZWERT_10RAPPEN; break;
+      case MUENZWERT_20RAPPEN: nSelektierteSaeule = POSITION_MUENZWERT_20RAPPEN; break;
+      case MUENZWERT_50RAPPEN: nSelektierteSaeule = POSITION_MUENZWERT_50RAPPEN; break;
+      case MUENZWERT_100RAPPEN: nSelektierteSaeule = POSITION_MUENZWERT_100RAPPEN; break;
+      case MUENZWERT_200RAPPEN: nSelektierteSaeule = POSITION_MUENZWERT_200RAPPEN; break;
+      
+      default:
+      {
+        // fehlercode wenn eine Münze nicht unterstützt wird!
+        return -200;
+      }
+    }  
     
+    // prüfen ob noch genügend Platz in der Säule vorhanden ist
+    nPlatz = pruefePlatzInSaeule(nSelektierteSaeule);
+    if (nPlatz > pAnzahl)
+    {
+      // wenn genügend Platz vorhanden die gewünschte Anzahl Münzen hinzufügen.
+      for (int i = 0; i < pAnzahl; i++)
+      {
+        m_oMuenzSaeulen[nSelektierteSaeule].addMuenze();
+      }
+    }
+    else
+    {
+      // wenn nicht genügend Platz vorhanden ist --> die Differenz angeben
+      return (nPlatz - pAnzahl);
+    }
   }
 
   /**

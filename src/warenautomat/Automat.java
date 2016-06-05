@@ -14,9 +14,15 @@ import warenautomat.*;
 public class Automat {
   
   private static final int NR_DREHTELLER = 7;
+  
+  private static final int VERFALLSDATUMSANZEIGE_AUS = 0;
+  private static final int VERFALLSDATUMSANZEIGE_GRUEN = 1;
+  private static final int VERFALLSDATUMSANZEIGE_ROT = 2;
+  
+  
   private Drehteller[] mDrehteller;
   private Kasse mKasse;
-
+  
   /**
    * Hier werden alle Warentypen gespeichert.
    */
@@ -37,6 +43,9 @@ public class Automat {
     {
       mDrehteller[i] = new Drehteller();
     }
+    
+    // warentypen objekt ertsellen
+    m_oAlleWarentypen = new WarenTypSammlung();
   }
 
   /**
@@ -76,7 +85,7 @@ public class Automat {
     }
        
     // das aktuelle Fach füllen
-    mDrehteller[pDrehtellerNr].FuelleFach(new Ware(typ, pVerfallsDatum);
+    mDrehteller[pDrehtellerNr].FuelleFach(new Ware(typ, pVerfallsDatum));
     
   }
 
@@ -99,13 +108,38 @@ public class Automat {
    */
   public void drehen() 
   {
+    double dblPreis;
     
     // alle Teller drehen
-    for (Drehteller teller: mDrehteller)
+    for (int i = 0; i < mDrehteller.length; i++)
     {
-      teller.Drehen();
-    }
-    
+      // aktueller Dreteller drehen
+      mDrehteller[i].Drehen();
+      
+      // preisanzeige aktualisieren
+      Ware aktuelleWare = mDrehteller[i].HoleFachVorDerTuere().GetWare();
+      if (aktuelleWare != null)
+      {
+        dblPreis = (double)(aktuelleWare.Preis() / 100);
+        SystemSoftware.zeigeWarenPreisAn(i + 1, dblPreis);
+      
+        // verfallsdatum prüfen und Anzeige aktualisieren
+        if (SystemSoftware.gibAktuellesDatum().before(aktuelleWare.AblaufDatum()))
+        {
+          SystemSoftware.zeigeVerfallsDatum(i + 1, VERFALLSDATUMSANZEIGE_GRUEN);
+        }
+        else
+        {
+          SystemSoftware.zeigeVerfallsDatum(i + 1, VERFALLSDATUMSANZEIGE_ROT);
+        }
+      }
+      else
+      {
+        // Verfallsdatumanzeige ausschalten und Preis auf 0 setzen
+        SystemSoftware.zeigeWarenPreisAn(i + 1, 0.0);
+        SystemSoftware.zeigeVerfallsDatum(i + 1, VERFALLSDATUMSANZEIGE_AUS);
+      }
+    }    
   }
 
   /**
@@ -165,4 +199,26 @@ public class Automat {
     
   }
   
+  /**
+   * Liefert die Aktuelle Position der Drehteller
+   * @return
+   */
+  public int gibAktuelleDrehtellerPosition()
+  {
+    // da alle Drehteller miteinander gedreht werden, geht man davon
+    // aus dass alle dieselbe Position besitzen --> also Fix erster Drehteller abfragen.
+    
+    // nach aussen werden die Drehteller von 1 - 16 nummeriert. Intern von 0 - 15 
+    return mDrehteller[0].AktuellePosition() + 1;
+  }
+  
+  /**
+   * Gibt das Fach der entsprechenden Drehtellernummer welches vor der Tür ist zurück
+   * @param i_nDrehtellerNr
+   * @return
+   */
+  public Fach gibFachVorDerTuer(int i_nDrehtellerNr)
+  {
+    return mDrehteller[i_nDrehtellerNr].HoleFachVorDerTuere();
+  }
 }
