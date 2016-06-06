@@ -15,8 +15,7 @@ import warenautomat.SystemSoftware;
 public class Drehteller
 {
   
-  static final int ANZAHL_FAECHER = 16;
-  static final int POSITIONSNR_VOR_TUER = 0;
+  private static final int ANZAHL_FAECHER = 16;
   
   /**
    * In dieser Liste werden alle Fächer gespeichert.
@@ -73,6 +72,16 @@ public class Drehteller
   }
   
   /**
+   * Liefert ein spezifisches Fach
+   * @param i_nFachNr
+   * @return
+   */
+  public Fach HoleSpezifischesFach(int i_nFachNr)
+  {
+    return m_oFaecher[i_nFachNr];
+  }
+  
+  /**
    * Diese Funktion liefert die Ware, welche vor der Türe steht
    * @return
    */
@@ -88,5 +97,14 @@ public class Drehteller
   public int AktuellePosition()
   {
     return m_nActFach;
+  }
+  
+  /**
+   * Liefert die Anzahl Fächer des Drehtellers
+   * @return
+   */
+  public int AnzahlFaecher()
+  {
+    return ANZAHL_FAECHER;
   }
 }

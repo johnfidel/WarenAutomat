@@ -52,6 +52,10 @@ public class AutomatTest
         
         automat.drehen();
       }
+      
+      // gesammt warenbetrag abfragen
+      System.out.println("Gesammt Warenwert: " + automat.gibTotalenWarenWert());
+      
     }
   
   }

@@ -28,6 +28,7 @@ public class Automat {
    */
   private WarenTypSammlung m_oAlleWarentypen;
   
+  private ArrayList<Transaktion> m_oVerkaufteWare;
   
   /**
    * Der Standard-Konstruktor. <br>
@@ -46,6 +47,10 @@ public class Automat {
     
     // warentypen objekt ertsellen
     m_oAlleWarentypen = new WarenTypSammlung();
+    
+    // tranaktionsliste erstellen
+    m_oVerkaufteWare = new ArrayList<Transaktion>();
+    
   }
 
   /**
@@ -92,7 +97,8 @@ public class Automat {
   /**
    * Gibt die Objekt-Referenz auf die <em> Kasse </em> zurück.
    */
-  public Kasse gibKasse() {
+  public Kasse gibKasse() 
+  {
     return mKasse;
   }
 
@@ -165,7 +171,22 @@ public class Automat {
    *          Nummerierung beginnt mit 1 (nicht 0)!
    * @return Wenn alles o.k. <code> true </code>, sonst <code> false </code>.
    */
-  public boolean oeffnen(int pDrehtellerNr) {
+  public boolean oeffnen(int pDrehtellerNr) 
+  {
+  
+    Fach actFach = mDrehteller[pDrehtellerNr].HoleFachVorDerTuere();
+    
+    // wenn das Fach nicht leer ist, weiter gehen
+    if (!actFach.IsEmpty())
+    {
+      Ware actWare = actFach.GetWare();
+      
+      // verfallsdatum prüfen
+      if (actWare.AblaufDatum().before(SystemSoftware.gibAktuellesDatum()))
+      {
+        
+      }
+    }
     
     return false;  // TODO
     
@@ -179,10 +200,44 @@ public class Automat {
    * 
    * @return Der totale Warenwert des Automaten.
    */
-  public double gibTotalenWarenWert() {
+  public double gibTotalenWarenWert() 
+  {
+    int nWarenWert = 0;
+    Date aktuellesDatum = SystemSoftware.gibAktuellesDatum();
     
-    return 0.0; // TODO
+    // hier wird über alle Waren iteriert. Weil nach Ablaufdatum nur noch 10% des
+    // Warenwertes gerechnet wird, wird hier immer aktiv gerechnet um Redundanzen
+    // zu vermeiden
     
+    // alle Drehteller iterieren
+    for (int drehtellerNr = 0; drehtellerNr < mDrehteller.length; drehtellerNr++)
+    {
+      Drehteller actTeller = mDrehteller[drehtellerNr];
+      
+      for (int fachNr = 0; fachNr < actTeller.AnzahlFaecher(); fachNr++)
+      {
+        Fach actFach = actTeller.HoleSpezifischesFach(fachNr);
+        Ware actWare = actFach.GetWare();
+        
+        if (actWare != null)
+        {
+          
+          // prüfen ob das Ablaufdatum bereits erreicht ist!
+          if (actWare.AblaufDatum().before(aktuellesDatum))
+          {
+            // Ablaufdatum überschritten --> 10% des Warenwertes rechnen
+            nWarenWert += (actWare.Preis() / 10);
+          }
+          else
+          {
+            nWarenWert += actFach.GetWare().Preis(); 
+          }
+        }
+      }
+    }
+    
+    // weil die Systemsoftware mit double rechnet --> betrag umrechnen
+    return ((double)nWarenWert / 100.0);
   }
 
   /**

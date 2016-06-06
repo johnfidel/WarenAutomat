@@ -14,7 +14,8 @@ import warenautomat.SystemSoftware;
  */
 public class Kasse 
 {
-
+  private static final int ANZAHL_SAEULEN = 5;
+  
   private static final int POSITION_MUENZWERT_10RAPPEN = 0;
   private static final int POSITION_MUENZWERT_20RAPPEN = 1;
   private static final int POSITION_MUENZWERT_50RAPPEN = 2;
@@ -27,6 +28,11 @@ public class Kasse
   private static final int MUENZWERT_100RAPPEN = 100;
   private static final int MUENZWERT_200RAPPEN = 200;
  
+  /**
+   * Diese Variable speichert den Verfügabren eingeworfenen Betrag
+   */
+  private int m_nEingeworfenerBetrag;
+  
   /**
    * Diese Funktion liefert den Platz welcher in einer Säule verlbeibt.
    * @param i_nMuenzSaulenIdx: der Index der Säule
@@ -43,6 +49,28 @@ public class Kasse
   }
   
   /**
+   * Diese Funktion liefert den Münzsäulenindex anhand des Münzbetrages
+   * @param i_nBetrag
+   * @return
+   */
+  private int gibMuenzSaeulenIndexAusBetrag(int i_nBetrag)
+  {
+    switch (i_nBetrag)
+    {
+      case MUENZWERT_10RAPPEN: return POSITION_MUENZWERT_10RAPPEN;
+      case MUENZWERT_20RAPPEN: return POSITION_MUENZWERT_20RAPPEN;
+      case MUENZWERT_50RAPPEN: return POSITION_MUENZWERT_50RAPPEN;
+      case MUENZWERT_100RAPPEN: return POSITION_MUENZWERT_100RAPPEN;
+      case MUENZWERT_200RAPPEN: return POSITION_MUENZWERT_200RAPPEN;
+    
+      default:
+      {
+        return -1;
+      }
+    }
+  }
+  
+  /**
    * Dies ist ein Array welches alle Münzsäulen enthält
    */
   private MuenzSaeule[] m_oMuenzSaeulen;
@@ -53,6 +81,8 @@ public class Kasse
    */
   public Kasse() 
   {
+    
+    m_oMuenzSaeulen = new MuenzSaeule[ANZAHL_SAEULEN];
     
     // eine Säule für jeden Münzwert erstellen
     m_oMuenzSaeulen[POSITION_MUENZWERT_10RAPPEN] = new MuenzSaeule(MUENZWERT_10RAPPEN);
@@ -82,30 +112,22 @@ public class Kasse
     int nPlatz;
     int nSelektierteSaeule;
     
-    switch (nMuenzBetrag)
+    nSelektierteSaeule = gibMuenzSaeulenIndexAusBetrag(nMuenzBetrag);  
+    if (nSelektierteSaeule == -1)
     {
-      case MUENZWERT_10RAPPEN: nSelektierteSaeule = POSITION_MUENZWERT_10RAPPEN; break;
-      case MUENZWERT_20RAPPEN: nSelektierteSaeule = POSITION_MUENZWERT_20RAPPEN; break;
-      case MUENZWERT_50RAPPEN: nSelektierteSaeule = POSITION_MUENZWERT_50RAPPEN; break;
-      case MUENZWERT_100RAPPEN: nSelektierteSaeule = POSITION_MUENZWERT_100RAPPEN; break;
-      case MUENZWERT_200RAPPEN: nSelektierteSaeule = POSITION_MUENZWERT_200RAPPEN; break;
-      
-      default:
-      {
-        // fehlercode wenn eine Münze nicht unterstützt wird!
-        return -200;
-      }
-    }  
+      return -200;
+    }
     
     // prüfen ob noch genügend Platz in der Säule vorhanden ist
     nPlatz = pruefePlatzInSaeule(nSelektierteSaeule);
-    if (nPlatz > pAnzahl)
+    if (nPlatz >= pAnzahl)
     {
       // wenn genügend Platz vorhanden die gewünschte Anzahl Münzen hinzufügen.
       for (int i = 0; i < pAnzahl; i++)
       {
         m_oMuenzSaeulen[nSelektierteSaeule].addMuenze();
       }
+      return pAnzahl;
     }
     else
     {
@@ -143,19 +165,90 @@ public class Kasse
    * @return <code> true </code>, wenn er Einwurf erfolgreich war. <br>
    *         <code> false </code>, wenn Münzsäule bereits voll war.
    */
-  public boolean einnehmen(double pMuenzenBetrag) {
+  public boolean einnehmen(double pMuenzenBetrag) 
+  {
     
-    return false; // TODO
+    int nBetrag = (int)(Math.round(pMuenzenBetrag * 100.0));
+    int nSaeulenIdx;
     
+    // münzsäule eruieren
+    nSaeulenIdx = gibMuenzSaeulenIndexAusBetrag(nBetrag);
+    
+    // hat es platz in der Kasse
+    if (pruefePlatzInSaeule(nSaeulenIdx) > 0)
+    {
+      // münze in die entsprechende Münzäule einlegen
+      m_oMuenzSaeulen[nSaeulenIdx].addMuenze();     
+      m_nEingeworfenerBetrag += nBetrag;
+      SystemSoftware.zeigeBetragAn(nBetrag / 100.0);
+      
+      return true;
+    }
+    else
+    {
+      // kein Platz mehr in der Münzsäule --> münze wieder auswerfen
+      SystemSoftware.auswerfenWechselGeld(pMuenzenBetrag);
+      
+      return false;
+    }    
   }
 
   /**
+   * Liefert den aktuell eingeworfenen Betrag
+   * @return
+   */
+  public int EingeworfenerBetrag()
+  {
+    return m_nEingeworfenerBetrag;
+  }
+  
+  /**
    * Bewirkt den Auswurf des Restbetrages.
    */
-  public void gibWechselGeld() {
+  public void gibWechselGeld() 
+  {
+    boolean zuWenigWechselGeld = false;
+    int n10er = 0;
+    int n20er = 0;
+    int n50er = 0;
+    int n100er = 0;
+    int n200er = 0;
+    int nFuellstand200er = m_oMuenzSaeulen[POSITION_MUENZWERT_200RAPPEN].Fuellstand();
+    int nFuellstand100er = m_oMuenzSaeulen[POSITION_MUENZWERT_100RAPPEN].Fuellstand();
+    int nFuellstand50er = m_oMuenzSaeulen[POSITION_MUENZWERT_50RAPPEN].Fuellstand();
+    int nFuellstand20er = m_oMuenzSaeulen[POSITION_MUENZWERT_20RAPPEN].Fuellstand();
+    int nFuellstand10er = m_oMuenzSaeulen[POSITION_MUENZWERT_10RAPPEN].Fuellstand();
+    int nRestgeld = m_nEingeworfenerBetrag;
     
-    // TODO
+    // von der Grössten zur kleinsten Münze ausgeben
+    while ((nRestgeld >= 200) && (nFuellstand200er > 0)) { n200er++; nFuellstand200er--; nRestgeld -= 200; }
+    while ((nRestgeld >= 100) && (nFuellstand100er > 0)) { n100er++; nFuellstand100er--; nRestgeld -= 100; } 
+    while ((nRestgeld >= 50) && (nFuellstand50er > 0)) { n50er++; nFuellstand50er--; nRestgeld -= 50; }
+    while ((nRestgeld >= 20) && (nFuellstand20er > 0)) { n20er++; nFuellstand20er--; nRestgeld -= 20; }
+    while ((nRestgeld >= 10) && (nFuellstand10er > 0)) { n10er++; nFuellstand10er--; nRestgeld -= 10; }
     
+    if (nRestgeld > 0)
+    {
+      // betrag ungenügend!
+      zuWenigWechselGeld = true;
+      SystemSoftware.zeigeZuWenigWechselGeldAn();
+    }  
+    
+    // 
+    if (!zuWenigWechselGeld)
+    {
+      // geld effektiv ausgeben
+      while (n200er > 0){ SystemSoftware.auswerfenWechselGeld(2.00); n200er++; }
+      while (n200er > 0){ SystemSoftware.auswerfenWechselGeld(1.00); n100er++; }
+      while (n200er > 0){ SystemSoftware.auswerfenWechselGeld(0.50); n50er++; }
+      while (n200er > 0){ SystemSoftware.auswerfenWechselGeld(0.20); n20er++; }
+      while (n200er > 0){ SystemSoftware.auswerfenWechselGeld(0.10); n10er++; }
+      
+      // gesammtbetrag abzählen
+      m_nEingeworfenerBetrag = 0;
+      // anzeige aktualisieren
+      SystemSoftware.zeigeBetragAn(m_nEingeworfenerBetrag / 100.0);
+    }    
   }
 
   /**
@@ -168,6 +261,21 @@ public class Kasse
     
     return 0.0; // TODO
     
+  }
+  
+  /**
+   * Liefert den aktuellen Kassenwert
+   * @return
+   */
+  public int gibKassenWert()
+  {
+    int nWert = 0;
+    
+    for (int i = 0; i < m_oMuenzSaeulen.length; i++)
+    {
+      nWert += m_oMuenzSaeulen[i].SaeulenWert();
+    }
+    return nWert;
   }
 
 }
