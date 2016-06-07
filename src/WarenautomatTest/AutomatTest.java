@@ -32,7 +32,7 @@ public class AutomatTest
       {
         System.out.println("Fach #" + fachNr);
       
-        for (int drehtellerNr = 0; drehtellerNr < 7; drehtellerNr++)
+        for (int drehtellerNr = 1; drehtellerNr <= 7; drehtellerNr++)
         {
           Fach aktuellesFach = automat.gibFachVorDerTuer(drehtellerNr);
          
@@ -55,7 +55,7 @@ public class AutomatTest
       
       // gesammt warenbetrag abfragen
       System.out.println("Gesammt Warenwert: " + automat.gibTotalenWarenWert());
-      
+           
     }
   
   }

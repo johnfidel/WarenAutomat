@@ -1,6 +1,8 @@
 package warenautomat;
 
 
+import java.util.ArrayList;
+
 import warenautomat.SystemSoftware;
 
 /**
@@ -27,7 +29,26 @@ public class Kasse
   private static final int MUENZWERT_50RAPPEN = 50;
   private static final int MUENZWERT_100RAPPEN = 100;
   private static final int MUENZWERT_200RAPPEN = 200;
- 
+
+  /**
+   * Diese Hilfsklasse ist für das Speichern der Restgeld Informationen
+   * @author rappic
+   *
+   */
+  private class RestGeldInfo
+  {
+    public int n10er;
+    public int n20er;
+    public int n50er;
+    public int n100er;
+    public int n200er;
+  }
+  
+  /**
+   * Speichert details zu allen getätigten Verkäufen
+   */
+  private VerkaufsDetails m_oVerkaufsDetails;
+  
   /**
    * Diese Variable speichert den Verfügabren eingeworfenen Betrag
    */
@@ -71,6 +92,18 @@ public class Kasse
   }
   
   /**
+   * Mit dieser Funktion werden alle Münzsäulen aktualisert
+   */
+  private void aktualisiereMuenzSaeulen()
+  {
+    SystemSoftware.zeigeMuenzenInGui(2.00, m_oMuenzSaeulen[POSITION_MUENZWERT_200RAPPEN].Fuellstand());
+    SystemSoftware.zeigeMuenzenInGui(1.00, m_oMuenzSaeulen[POSITION_MUENZWERT_100RAPPEN].Fuellstand());
+    SystemSoftware.zeigeMuenzenInGui(0.50, m_oMuenzSaeulen[POSITION_MUENZWERT_50RAPPEN].Fuellstand());
+    SystemSoftware.zeigeMuenzenInGui(0.20, m_oMuenzSaeulen[POSITION_MUENZWERT_20RAPPEN].Fuellstand());
+    SystemSoftware.zeigeMuenzenInGui(0.10, m_oMuenzSaeulen[POSITION_MUENZWERT_10RAPPEN].Fuellstand());
+  }
+  
+  /**
    * Dies ist ein Array welches alle Münzsäulen enthält
    */
   private MuenzSaeule[] m_oMuenzSaeulen;
@@ -91,6 +124,9 @@ public class Kasse
     m_oMuenzSaeulen[POSITION_MUENZWERT_100RAPPEN] = new MuenzSaeule(MUENZWERT_100RAPPEN);
     m_oMuenzSaeulen[POSITION_MUENZWERT_200RAPPEN] = new MuenzSaeule(MUENZWERT_200RAPPEN);
     
+    // tranaktionsliste erstellen
+    m_oVerkaufsDetails = new VerkaufsDetails();
+
   }
 
   /**
@@ -126,6 +162,7 @@ public class Kasse
       for (int i = 0; i < pAnzahl; i++)
       {
         m_oMuenzSaeulen[nSelektierteSaeule].addMuenze();
+        aktualisiereMuenzSaeulen();
       }
       return pAnzahl;
     }
@@ -141,11 +178,7 @@ public class Kasse
    * Knopf "Bestätigen" gedrückt hat. (siehe Use-Case "Kasse auffüllen"). <br>
    * Verbucht die Münzen gemäss dem vorangegangenen Aufruf der Methode <code> fuelleKasse() </code>.
    */
-  public void fuelleKasseBestaetigung() {
-    
-    // TODO
-    
-  }
+  public void fuelleKasseBestaetigung() {}
 
   /**
    * Diese Methode wird aufgerufen wenn ein Kunde eine Münze eingeworfen hat. <br>
@@ -180,7 +213,8 @@ public class Kasse
       // münze in die entsprechende Münzäule einlegen
       m_oMuenzSaeulen[nSaeulenIdx].addMuenze();     
       m_nEingeworfenerBetrag += nBetrag;
-      SystemSoftware.zeigeBetragAn(nBetrag / 100.0);
+      SystemSoftware.zeigeBetragAn(EingeworfenerBetrag() / 100.0);
+      aktualisiereMuenzSaeulen();
       
       return true;
     }
@@ -203,16 +237,14 @@ public class Kasse
   }
   
   /**
-   * Bewirkt den Auswurf des Restbetrages.
+   * Testet ob die Kasse in der Lage ist den angegebenen Betrag 
+   * als Wechselgeld auszugeben
+   * @param i_nWechselBetrag: Den zu testenden Betrag
+   * @return True wenn der Betrag ausgegeben werden kan
    */
-  public void gibWechselGeld() 
+  private boolean testeWechselgeld(int i_nWechselBetrag, RestGeldInfo o_oInfo)
   {
     boolean zuWenigWechselGeld = false;
-    int n10er = 0;
-    int n20er = 0;
-    int n50er = 0;
-    int n100er = 0;
-    int n200er = 0;
     int nFuellstand200er = m_oMuenzSaeulen[POSITION_MUENZWERT_200RAPPEN].Fuellstand();
     int nFuellstand100er = m_oMuenzSaeulen[POSITION_MUENZWERT_100RAPPEN].Fuellstand();
     int nFuellstand50er = m_oMuenzSaeulen[POSITION_MUENZWERT_50RAPPEN].Fuellstand();
@@ -221,46 +253,85 @@ public class Kasse
     int nRestgeld = m_nEingeworfenerBetrag;
     
     // von der Grössten zur kleinsten Münze ausgeben
-    while ((nRestgeld >= 200) && (nFuellstand200er > 0)) { n200er++; nFuellstand200er--; nRestgeld -= 200; }
-    while ((nRestgeld >= 100) && (nFuellstand100er > 0)) { n100er++; nFuellstand100er--; nRestgeld -= 100; } 
-    while ((nRestgeld >= 50) && (nFuellstand50er > 0)) { n50er++; nFuellstand50er--; nRestgeld -= 50; }
-    while ((nRestgeld >= 20) && (nFuellstand20er > 0)) { n20er++; nFuellstand20er--; nRestgeld -= 20; }
-    while ((nRestgeld >= 10) && (nFuellstand10er > 0)) { n10er++; nFuellstand10er--; nRestgeld -= 10; }
+    while ((nRestgeld >= 200) && (nFuellstand200er > 0)) { o_oInfo.n200er++; nFuellstand200er--; nRestgeld -= 200; }
+    while ((nRestgeld >= 100) && (nFuellstand100er > 0)) { o_oInfo.n100er++; nFuellstand100er--; nRestgeld -= 100; } 
+    while ((nRestgeld >= 50) && (nFuellstand50er > 0)) { o_oInfo.n50er++; nFuellstand50er--; nRestgeld -= 50; }
+    while ((nRestgeld >= 20) && (nFuellstand20er > 0)) { o_oInfo.n20er++; nFuellstand20er--; nRestgeld -= 20; }
+    while ((nRestgeld >= 10) && (nFuellstand10er > 0)) { o_oInfo.n10er++; nFuellstand10er--; nRestgeld -= 10; }
+
+    return (nRestgeld == 0);
+  }
+  
+  /**
+   * prüft ob genügend Wechselgeld zur Verfügung steht.
+   * @param i_nWechselBetrag
+   * @return
+   */
+  public boolean testeWechselgeld(int i_nWechselBetrag)
+  {
+    RestGeldInfo dummy = new RestGeldInfo();
     
-    if (nRestgeld > 0)
+    return testeWechselgeld(i_nWechselBetrag, dummy); 
+  }
+  
+  /**
+   * Bewirkt den Auswurf des Restbetrages.
+   */
+  public void gibWechselGeld() 
+  {
+    
+    RestGeldInfo info = new RestGeldInfo();
+    
+    if (!testeWechselgeld(m_nEingeworfenerBetrag, info))
     {
       // betrag ungenügend!
-      zuWenigWechselGeld = true;
       SystemSoftware.zeigeZuWenigWechselGeldAn();
     }  
-    
-    // 
-    if (!zuWenigWechselGeld)
+    else
     {
       // geld effektiv ausgeben
-      while (n200er > 0){ SystemSoftware.auswerfenWechselGeld(2.00); n200er++; }
-      while (n200er > 0){ SystemSoftware.auswerfenWechselGeld(1.00); n100er++; }
-      while (n200er > 0){ SystemSoftware.auswerfenWechselGeld(0.50); n50er++; }
-      while (n200er > 0){ SystemSoftware.auswerfenWechselGeld(0.20); n20er++; }
-      while (n200er > 0){ SystemSoftware.auswerfenWechselGeld(0.10); n10er++; }
+      while (info.n200er > 0){ SystemSoftware.auswerfenWechselGeld(2.00); info.n200er--; m_oMuenzSaeulen[POSITION_MUENZWERT_200RAPPEN].entferneMuenze(); }
+      while (info.n100er > 0){ SystemSoftware.auswerfenWechselGeld(1.00); info.n100er--; m_oMuenzSaeulen[POSITION_MUENZWERT_100RAPPEN].entferneMuenze(); }
+      while (info.n50er > 0){ SystemSoftware.auswerfenWechselGeld(0.50); info.n50er--; m_oMuenzSaeulen[POSITION_MUENZWERT_50RAPPEN].entferneMuenze(); }
+      while (info.n20er > 0){ SystemSoftware.auswerfenWechselGeld(0.20); info.n20er--; m_oMuenzSaeulen[POSITION_MUENZWERT_20RAPPEN].entferneMuenze(); }
+      while (info.n10er > 0){ SystemSoftware.auswerfenWechselGeld(0.10); info.n10er--; m_oMuenzSaeulen[POSITION_MUENZWERT_10RAPPEN].entferneMuenze(); }
+      
+      // alle Münzsäulen aktualisieren
+      aktualisiereMuenzSaeulen();
       
       // gesammtbetrag abzählen
       m_nEingeworfenerBetrag = 0;
       // anzeige aktualisieren
-      SystemSoftware.zeigeBetragAn(m_nEingeworfenerBetrag / 100.0);
+      SystemSoftware.zeigeBetragAn(0.0);
     }    
   }
 
+  /**
+   * Diese Funktion verbucht die Ware im aktuellen Fach aus einem bestimmten
+   * Drehteller
+   * @param i_nDrehtellerNr
+   */
+  public void WareVerbuchen(Ware i_nVerkaufteWare)
+  {
+    // Ware verbuchen
+    gibVerkaufsDetails().AddTransaktion(new Transaktion(i_nVerkaufteWare, SystemSoftware.gibAktuellesDatum()));
+    
+    // Geld Abbuchen
+    m_nEingeworfenerBetrag -= i_nVerkaufteWare.Preis();
+    
+    // Anzeige aktualisieren
+    SystemSoftware.zeigeBetragAn(Math.round((double)EingeworfenerBetrag() / 100.0));
+  }
+  
   /**
    * Gibt den Gesamtbetrag der bisher verkauften Waren zurück. <br>
    * Analyse: Abgeleitetes Attribut.
    * 
    * @return Gesamtbetrag der bisher verkauften Waren.
    */
-  public double gibBetragVerkaufteWaren() {
-    
-    return 0.0; // TODO
-    
+  public double gibBetragVerkaufteWaren() 
+  {  
+    return gibVerkaufsDetails().GesammtVerkaufswert();
   }
   
   /**
@@ -278,4 +349,12 @@ public class Kasse
     return nWert;
   }
 
+  /**
+   * Liefert die Verkaufsdetails
+   * @return
+   */
+  public VerkaufsDetails gibVerkaufsDetails()
+  {
+    return m_oVerkaufsDetails;
+  }
 }

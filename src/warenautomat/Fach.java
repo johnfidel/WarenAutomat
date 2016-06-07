@@ -37,6 +37,14 @@ public class Fach
     m_oWare = i_oWare;
   }
   
+  /**
+   * leer das fach
+   */
+  public void Fachleeren()
+  {
+    m_oWare = null;
+  }
+  
   /*!
    * Diese Methode liefert True wenn sich eine Ware im Fach befindet
    */

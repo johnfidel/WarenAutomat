@@ -27,8 +27,40 @@ public class Automat {
    * Hier werden alle Warentypen gespeichert.
    */
   private WarenTypSammlung m_oAlleWarentypen;
-  
-  private ArrayList<Transaktion> m_oVerkaufteWare;
+    
+  /**
+   * Mit dieser Funktion werden alle Anzeigen über alle
+   * Drehteller aktalisiert
+   */
+  private void aktualisiereFachAnzeigen(int i_nDrehteller)
+  {
+    Ware actWare = mDrehteller[i_nDrehteller].HoleFachVorDerTuere().GetWare();
+    
+    if (actWare != null)
+    {
+      
+      double dblPreis = (double)(actWare.Preis() / 100);
+      SystemSoftware.zeigeWarenPreisAn(i_nDrehteller + 1, dblPreis);
+      SystemSoftware.zeigeWareInGui(i_nDrehteller + 1, actWare.Name(), actWare.AblaufDatum());
+        
+      // verfallsdatum prüfen und Anzeige aktualisieren
+      if (actWare.AblaufDatum().after(SystemSoftware.gibAktuellesDatum()))
+      {
+        SystemSoftware.zeigeVerfallsDatum(i_nDrehteller + 1, VERFALLSDATUMSANZEIGE_GRUEN);
+      }
+      else
+      {
+        SystemSoftware.zeigeVerfallsDatum(i_nDrehteller + 1, VERFALLSDATUMSANZEIGE_ROT);
+      }
+    }
+    else
+    {
+      // Verfallsdatumanzeige ausschalten und Preis auf 0 setzen
+      SystemSoftware.zeigeWarenPreisAn(i_nDrehteller + 1, 0.0);
+      SystemSoftware.zeigeVerfallsDatum(i_nDrehteller + 1, VERFALLSDATUMSANZEIGE_AUS);
+      SystemSoftware.zeigeWareInGui(i_nDrehteller + 1, "", null);
+    }
+  }
   
   /**
    * Der Standard-Konstruktor. <br>
@@ -47,9 +79,8 @@ public class Automat {
     
     // warentypen objekt ertsellen
     m_oAlleWarentypen = new WarenTypSammlung();
-    
-    // tranaktionsliste erstellen
-    m_oVerkaufteWare = new ArrayList<Transaktion>();
+        
+    mKasse = new Kasse();
     
   }
 
@@ -72,6 +103,8 @@ public class Automat {
   public void fuelleFach(int pDrehtellerNr, String pWarenName, double pPreis,
       Date pVerfallsDatum) 
   {
+    
+    int nInterneDrehtellerNr = pDrehtellerNr - 1;
     // preis zuerst umwandeln
     int nPreis = (int)Math.round(pPreis * 100.0);
       
@@ -90,7 +123,11 @@ public class Automat {
     }
        
     // das aktuelle Fach füllen
-    mDrehteller[pDrehtellerNr].FuelleFach(new Ware(typ, pVerfallsDatum));
+    Ware neueWare = new Ware(typ, pVerfallsDatum);
+    mDrehteller[nInterneDrehtellerNr].FuelleFach(neueWare);
+    
+    // ware auch im gui anzeigen
+    SystemSoftware.zeigeWareInGui(pDrehtellerNr, pWarenName, pVerfallsDatum);
     
   }
 
@@ -115,7 +152,10 @@ public class Automat {
   public void drehen() 
   {
     double dblPreis;
-    
+
+    // auch im GUI drehen
+    SystemSoftware.dreheWarenInGui();
+
     // alle Teller drehen
     for (int i = 0; i < mDrehteller.length; i++)
     {
@@ -124,28 +164,10 @@ public class Automat {
       
       // preisanzeige aktualisieren
       Ware aktuelleWare = mDrehteller[i].HoleFachVorDerTuere().GetWare();
-      if (aktuelleWare != null)
-      {
-        dblPreis = (double)(aktuelleWare.Preis() / 100);
-        SystemSoftware.zeigeWarenPreisAn(i + 1, dblPreis);
-      
-        // verfallsdatum prüfen und Anzeige aktualisieren
-        if (SystemSoftware.gibAktuellesDatum().before(aktuelleWare.AblaufDatum()))
-        {
-          SystemSoftware.zeigeVerfallsDatum(i + 1, VERFALLSDATUMSANZEIGE_GRUEN);
-        }
-        else
-        {
-          SystemSoftware.zeigeVerfallsDatum(i + 1, VERFALLSDATUMSANZEIGE_ROT);
-        }
-      }
-      else
-      {
-        // Verfallsdatumanzeige ausschalten und Preis auf 0 setzen
-        SystemSoftware.zeigeWarenPreisAn(i + 1, 0.0);
-        SystemSoftware.zeigeVerfallsDatum(i + 1, VERFALLSDATUMSANZEIGE_AUS);
-      }
-    }    
+    
+      // anzeige für den aktuellen Drehteller aktualisieren
+      aktualisiereFachAnzeigen(i);
+    } 
   }
 
   /**
@@ -174,7 +196,8 @@ public class Automat {
   public boolean oeffnen(int pDrehtellerNr) 
   {
   
-    Fach actFach = mDrehteller[pDrehtellerNr].HoleFachVorDerTuere();
+    int nInterneDrehtellerNr = pDrehtellerNr - 1;
+    Fach actFach = mDrehteller[nInterneDrehtellerNr].HoleFachVorDerTuere();
     
     // wenn das Fach nicht leer ist, weiter gehen
     if (!actFach.IsEmpty())
@@ -182,13 +205,44 @@ public class Automat {
       Ware actWare = actFach.GetWare();
       
       // verfallsdatum prüfen
-      if (actWare.AblaufDatum().before(SystemSoftware.gibAktuellesDatum()))
+      if (actWare.AblaufDatum().after(SystemSoftware.gibAktuellesDatum()))
       {
-        
+        // prüfen ob genügend Geld eingeworfen wurde
+        if (gibKasse().EingeworfenerBetrag() >= actWare.Preis())
+        {   
+          // prüfen ob wir wechselgeld ausgeben können
+          int nRestBetrag = gibKasse().EingeworfenerBetrag() - actWare.Preis();
+          
+          if (gibKasse().testeWechselgeld(nRestBetrag))
+          {
+            // alle checks waren erfolgreich!
+            // fach entriegeln
+            SystemSoftware.entriegeln(pDrehtellerNr);
+            
+            // ware verbuchen
+            gibKasse().WareVerbuchen(actWare);
+            // fach leeren
+            actFach.Fachleeren();
+            
+            aktualisiereFachAnzeigen(nInterneDrehtellerNr);
+            
+            return true;
+          }
+          else
+          {
+            // zu wenig wechselgeld
+            SystemSoftware.zeigeZuWenigWechselGeldAn();
+          }
+        }
+        else
+        {
+          // zu wenig geld
+          SystemSoftware.zeigeZuWenigGeldAn();
+        }
       }
     }
     
-    return false;  // TODO
+    return false;  
     
   }
 
@@ -248,9 +302,24 @@ public class Automat {
    * @param pDatum Das Datum seit welchem gesucht werden soll.
    * @return Anzahl verkaufter Waren.
    */
-  public int gibVerkaufsStatistik(String pName, Date pDatum) {
+  public int gibVerkaufsStatistik(String pName, Date pDatum) 
+  {
+    int nZaehler = 0;
+    Kasse kasse = gibKasse();
     
-    return 0; // TODO
+    for (Transaktion trans: kasse.gibVerkaufsDetails().VerkaufteWare())
+    {
+      // namen der Ware überprüfen
+      if (trans.getWare().Name().equals(pName))
+      {
+        // prüfen ob das Datum innerhalb des gewünschten Bereiches liegt
+        if (trans.getVerkaufsdatum().after(pDatum))
+        {
+          nZaehler++;
+        }
+      }
+    }
+    return nZaehler;
     
   }
   
@@ -267,13 +336,4 @@ public class Automat {
     return mDrehteller[0].AktuellePosition() + 1;
   }
   
-  /**
-   * Gibt das Fach der entsprechenden Drehtellernummer welches vor der Tür ist zurück
-   * @param i_nDrehtellerNr
-   * @return
-   */
-  public Fach gibFachVorDerTuer(int i_nDrehtellerNr)
-  {
-    return mDrehteller[i_nDrehtellerNr].HoleFachVorDerTuere();
-  }
 }
