@@ -275,16 +275,15 @@ public class Automat {
         
         if (actWare != null)
         {
-          
           // prüfen ob das Ablaufdatum bereits erreicht ist!
-          if (actWare.AblaufDatum().before(aktuellesDatum))
+          if (aktuellesDatum.after(actWare.AblaufDatum()))
           {
             // Ablaufdatum überschritten --> 10% des Warenwertes rechnen
             nWarenWert += (actWare.Preis() / 10);
           }
           else
           {
-            nWarenWert += actFach.GetWare().Preis(); 
+            nWarenWert += actWare.Preis(); 
           }
         }
       }
@@ -321,6 +320,15 @@ public class Automat {
     }
     return nZaehler;
     
+  }
+  
+  /**
+   * Hier wird das Fach hinter der Tür geliefert
+   * @param i_nDrehtellerNr
+   */
+  public Fach gibFachVorDerTuer(int i_nDrehtellerNr)
+  {
+    return mDrehteller[i_nDrehtellerNr].HoleFachVorDerTuere();
   }
   
   /**
