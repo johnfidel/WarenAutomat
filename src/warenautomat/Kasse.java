@@ -244,13 +244,12 @@ public class Kasse
    */
   private boolean testeWechselgeld(int i_nWechselBetrag, RestGeldInfo o_oInfo)
   {
-    boolean zuWenigWechselGeld = false;
     int nFuellstand200er = m_oMuenzSaeulen[POSITION_MUENZWERT_200RAPPEN].Fuellstand();
     int nFuellstand100er = m_oMuenzSaeulen[POSITION_MUENZWERT_100RAPPEN].Fuellstand();
     int nFuellstand50er = m_oMuenzSaeulen[POSITION_MUENZWERT_50RAPPEN].Fuellstand();
     int nFuellstand20er = m_oMuenzSaeulen[POSITION_MUENZWERT_20RAPPEN].Fuellstand();
     int nFuellstand10er = m_oMuenzSaeulen[POSITION_MUENZWERT_10RAPPEN].Fuellstand();
-    int nRestgeld = m_nEingeworfenerBetrag;
+    int nRestgeld = i_nWechselBetrag;
     
     // von der Grössten zur kleinsten Münze ausgeben
     while ((nRestgeld >= 200) && (nFuellstand200er > 0)) { o_oInfo.n200er++; nFuellstand200er--; nRestgeld -= 200; }

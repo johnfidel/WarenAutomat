@@ -303,22 +303,11 @@ public class Automat {
    */
   public int gibVerkaufsStatistik(String pName, Date pDatum) 
   {
-    int nZaehler = 0;
-    Kasse kasse = gibKasse();
     
-    for (Transaktion trans: kasse.gibVerkaufsDetails().VerkaufteWare())
-    {
-      // namen der Ware überprüfen
-      if (trans.getWare().Name().equals(pName))
-      {
-        // prüfen ob das Datum innerhalb des gewünschten Bereiches liegt
-        if (trans.getVerkaufsdatum().after(pDatum))
-        {
-          nZaehler++;
-        }
-      }
-    }
-    return nZaehler;
+    int nAnzahlVerkaufte = gibKasse().gibVerkaufsDetails().gibAnzahlVerkaufte(pName, pDatum);
+    
+    //TODO anzeige im GUI???
+    return nAnzahlVerkaufte;
     
   }
   

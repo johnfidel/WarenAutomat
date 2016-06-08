@@ -8,6 +8,7 @@ import warenautomat.*;
 
 public class AutomatTest 
 {
+  
   public static void main(String[] args) throws ParseException {
 
     DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.GERMAN);
@@ -53,16 +54,18 @@ public class AutomatTest
         automat.drehen();
       }
       
+      // nun die Verkaufsstatistik abfragen
+      
       // gesammt warenbetrag abfragen
       System.out.println("Gesammt Warenwert: " + automat.gibTotalenWarenWert() + " " + SystemSoftware.gibAktuellesDatum());
            
       //Datum ändern
       SystemSoftware.setzeAktuellesDatum(df.parse("01.01.2020"));
       
-   // gesammt warenbetrag abfragen
+      // gesammt warenbetrag abfragen
       System.out.println("Gesammt Warenwert: " + automat.gibTotalenWarenWert() + " " + SystemSoftware.gibAktuellesDatum());
-      
-      
+          
+          
     }
   
   }
