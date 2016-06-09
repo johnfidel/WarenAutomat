@@ -39,7 +39,7 @@ public class Automat {
     if (actWare != null)
     {
       
-      double dblPreis = (double)(actWare.Preis() / 100);
+      double dblPreis = (double)(actWare.Preis()) / 100.0;
       SystemSoftware.zeigeWarenPreisAn(i_nDrehteller + 1, dblPreis);
       SystemSoftware.zeigeWareInGui(i_nDrehteller + 1, actWare.Name(), actWare.AblaufDatum());
         
@@ -129,6 +129,7 @@ public class Automat {
     // ware auch im gui anzeigen
     SystemSoftware.zeigeWareInGui(pDrehtellerNr, pWarenName, pVerfallsDatum);
     
+    aktualisiereFachAnzeigen(nInterneDrehtellerNr);
   }
 
   /**
@@ -240,6 +241,10 @@ public class Automat {
           SystemSoftware.zeigeZuWenigGeldAn();
         }
       }
+    }
+    else
+    {
+      System.out.println("Automat::oeffnen() --> Fach leer!");
     }
     
     return false;  

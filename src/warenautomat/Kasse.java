@@ -55,6 +55,19 @@ public class Kasse
   private int m_nEingeworfenerBetrag;
   
   /**
+   * Hilsklasse für das Füllen der Münzsäulen
+   * @author rappic
+   *
+   */
+  private class FuellInfo
+  {
+    public int nAnzahl;
+    public int nBetrag;
+  }
+  
+  private FuellInfo m_oFuellInfo;
+  
+  /**
    * Diese Funktion liefert den Platz welcher in einer Säule verlbeibt.
    * @param i_nMuenzSaulenIdx: der Index der Säule
    *        0: -.10
@@ -158,16 +171,16 @@ public class Kasse
     nPlatz = pruefePlatzInSaeule(nSelektierteSaeule);
     if (nPlatz >= pAnzahl)
     {
-      // wenn genügend Platz vorhanden die gewünschte Anzahl Münzen hinzufügen.
-      for (int i = 0; i < pAnzahl; i++)
-      {
-        m_oMuenzSaeulen[nSelektierteSaeule].addMuenze();
-        aktualisiereMuenzSaeulen();
-      }
+      m_oFuellInfo = new FuellInfo();
+      m_oFuellInfo.nAnzahl = pAnzahl;
+      m_oFuellInfo.nBetrag = nMuenzBetrag;
+      
       return pAnzahl;
     }
     else
     {
+      m_oFuellInfo = null;
+      
       // wenn nicht genügend Platz vorhanden ist --> die Differenz angeben
       return (nPlatz - pAnzahl);
     }
@@ -178,7 +191,23 @@ public class Kasse
    * Knopf "Bestätigen" gedrückt hat. (siehe Use-Case "Kasse auffüllen"). <br>
    * Verbucht die Münzen gemäss dem vorangegangenen Aufruf der Methode <code> fuelleKasse() </code>.
    */
-  public void fuelleKasseBestaetigung() {}
+  public void fuelleKasseBestaetigung() 
+  {
+    if (m_oFuellInfo != null)
+    {     
+      // wenn genügend Platz vorhanden die gewünschte Anzahl Münzen hinzufügen.
+      for (int i = 0; i < m_oFuellInfo.nAnzahl; i++)
+      {
+        // säulenindex holen
+        int nMuenzIndex = gibMuenzSaeulenIndexAusBetrag(m_oFuellInfo.nBetrag);
+        
+        m_oMuenzSaeulen[nMuenzIndex].addMuenze();
+        
+        aktualisiereMuenzSaeulen();
+      }
+    }
+    m_oFuellInfo = null;
+  }
 
   /**
    * Diese Methode wird aufgerufen wenn ein Kunde eine Münze eingeworfen hat. <br>
