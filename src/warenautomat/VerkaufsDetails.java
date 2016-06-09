@@ -1,6 +1,7 @@
 package warenautomat;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * In dieser Privaten KLasse werden alle getätigten
@@ -54,5 +55,32 @@ public class VerkaufsDetails
   public VerkaufsDetails()
   {
     m_oVerkaufteWare = new ArrayList<Transaktion>();
+  }
+  
+  /**
+   * Diese Funktion zählt die anzahl verkauften Waren
+   * im Filterdatumbereich
+   * @param pName warenname
+   * @param pDatum anfangsdatum bis heute
+   * @return
+   */
+  public int gibAnzahlVerkaufte(String pName, Date pStartDatum) 
+  {
+    int nZaehler = 0;
+    
+    for (Transaktion trans: VerkaufteWare())
+    {
+      // namen der Ware überprüfen
+      if (trans.getWare().Name().equals(pName))
+      {
+        // prüfen ob das Datum innerhalb des gewünschten Bereiches liegt
+        if (trans.getVerkaufsdatum().after(pStartDatum))
+        {
+          nZaehler++;
+        }
+      }
+    }
+    return nZaehler;
+    
   }
 }

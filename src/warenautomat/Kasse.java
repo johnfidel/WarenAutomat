@@ -1,8 +1,5 @@
 package warenautomat;
 
-
-import java.util.ArrayList;
-
 import warenautomat.SystemSoftware;
 
 /**
@@ -53,6 +50,19 @@ public class Kasse
    * Diese Variable speichert den Verfügabren eingeworfenen Betrag
    */
   private int m_nEingeworfenerBetrag;
+  
+  /**
+   * Hilsklasse für das Füllen der Münzsäulen
+   * @author rappic
+   *
+   */
+  private class FuellInfo
+  {
+    public int nAnzahl;
+    public int nBetrag;
+  }
+  
+  private FuellInfo m_oFuellInfo;
   
   /**
    * Diese Funktion liefert den Platz welcher in einer Säule verlbeibt.
@@ -158,16 +168,16 @@ public class Kasse
     nPlatz = pruefePlatzInSaeule(nSelektierteSaeule);
     if (nPlatz >= pAnzahl)
     {
-      // wenn genügend Platz vorhanden die gewünschte Anzahl Münzen hinzufügen.
-      for (int i = 0; i < pAnzahl; i++)
-      {
-        m_oMuenzSaeulen[nSelektierteSaeule].addMuenze();
-        aktualisiereMuenzSaeulen();
-      }
+      m_oFuellInfo = new FuellInfo();
+      m_oFuellInfo.nAnzahl = pAnzahl;
+      m_oFuellInfo.nBetrag = nMuenzBetrag;
+      
       return pAnzahl;
     }
     else
     {
+      m_oFuellInfo = null;
+      
       // wenn nicht genügend Platz vorhanden ist --> die Differenz angeben
       return (nPlatz - pAnzahl);
     }
@@ -178,7 +188,23 @@ public class Kasse
    * Knopf "Bestätigen" gedrückt hat. (siehe Use-Case "Kasse auffüllen"). <br>
    * Verbucht die Münzen gemäss dem vorangegangenen Aufruf der Methode <code> fuelleKasse() </code>.
    */
-  public void fuelleKasseBestaetigung() {}
+  public void fuelleKasseBestaetigung() 
+  {
+    if (m_oFuellInfo != null)
+    {     
+      // wenn genügend Platz vorhanden die gewünschte Anzahl Münzen hinzufügen.
+      for (int i = 0; i < m_oFuellInfo.nAnzahl; i++)
+      {
+        // säulenindex holen
+        int nMuenzIndex = gibMuenzSaeulenIndexAusBetrag(m_oFuellInfo.nBetrag);
+        
+        m_oMuenzSaeulen[nMuenzIndex].addMuenze();
+        
+        aktualisiereMuenzSaeulen();
+      }
+    }
+    m_oFuellInfo = null;
+  }
 
   /**
    * Diese Methode wird aufgerufen wenn ein Kunde eine Münze eingeworfen hat. <br>
@@ -244,13 +270,12 @@ public class Kasse
    */
   private boolean testeWechselgeld(int i_nWechselBetrag, RestGeldInfo o_oInfo)
   {
-    boolean zuWenigWechselGeld = false;
     int nFuellstand200er = m_oMuenzSaeulen[POSITION_MUENZWERT_200RAPPEN].Fuellstand();
     int nFuellstand100er = m_oMuenzSaeulen[POSITION_MUENZWERT_100RAPPEN].Fuellstand();
     int nFuellstand50er = m_oMuenzSaeulen[POSITION_MUENZWERT_50RAPPEN].Fuellstand();
     int nFuellstand20er = m_oMuenzSaeulen[POSITION_MUENZWERT_20RAPPEN].Fuellstand();
     int nFuellstand10er = m_oMuenzSaeulen[POSITION_MUENZWERT_10RAPPEN].Fuellstand();
-    int nRestgeld = m_nEingeworfenerBetrag;
+    int nRestgeld = i_nWechselBetrag;
     
     // von der Grössten zur kleinsten Münze ausgeben
     while ((nRestgeld >= 200) && (nFuellstand200er > 0)) { o_oInfo.n200er++; nFuellstand200er--; nRestgeld -= 200; }

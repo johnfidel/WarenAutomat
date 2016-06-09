@@ -1,7 +1,6 @@
 package warenautomat;
 
 import java.util.*;
-import warenautomat.*;
 
 /**
  * Diese Klasse bildet eine Transaktion ab. Resp. den Verkauf einer

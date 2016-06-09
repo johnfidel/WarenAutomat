@@ -47,4 +47,13 @@ public class Ware
   {
     return m_oAblaufDatum;
   }
+  
+  /**
+   * Liefert den Warentyp
+   * @return
+   */
+  public WarenTyp gibWarenTyp()
+  {
+    return m_oWarenTyp;
+  }
 }

@@ -27,7 +27,7 @@ public class FachTest
   
       WarenTyp mars = new WarenTyp("Mars", 250);
       Ware einMars = new Ware(mars, df.parse("05.09.2016"));
-      fach.SetWare(mars);
+      fach.SetWare(einMars);
       
       System.out.println("Ware im Fach ist: " + fach.GetWare().Name() + " " +
                                                 fach.GetWare().Preis() + " " +

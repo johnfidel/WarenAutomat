@@ -1,11 +1,7 @@
 
 package warenautomat;
 
-import java.util.Date;
-import java.util.*;
-
 import warenautomat.Fach;
-import warenautomat.SystemSoftware;
 
 /**
  * @author rappic
@@ -33,6 +29,7 @@ public class Drehteller
   public Drehteller()
   {
     m_oFaecher = new Fach[ANZAHL_FAECHER];
+    m_nActFach = 0;
     
     for (int i = 0; i < m_oFaecher.length; i++)
     {
@@ -60,10 +57,13 @@ public class Drehteller
    */
   public boolean FuelleFach(Ware i_oProdukt)
   {
+    int nFachNr = m_nActFach + 1;
+    if (nFachNr >= ANZAHL_FAECHER) { nFachNr = 0; }
+    
     // wenn das Fach noch leer ist, darf die Ware eingelegt werden.
-    if (m_oFaecher[m_nActFach].IsEmpty())
+    if (m_oFaecher[nFachNr].IsEmpty())
     {
-      m_oFaecher[m_nActFach].SetWare(i_oProdukt);
+      m_oFaecher[nFachNr].SetWare(i_oProdukt);
       
       return true;
     }
@@ -87,7 +87,10 @@ public class Drehteller
    */
   public Fach HoleFachVorDerTuere()
   {
-    return m_oFaecher[m_nActFach];
+    int nFachNr = m_nActFach + 1;
+    if (nFachNr >= ANZAHL_FAECHER) { nFachNr = 0; }
+        
+    return m_oFaecher[nFachNr];
   }
   
   /**

@@ -14,6 +14,7 @@ public class KasseTest
     // fülle 10 x .-50 = 5.-
     if (kasse.fuelleKasse(0.50, 10) == 10)
     {
+      kasse.fuelleKasseBestaetigung();
       System.out.println("Habe 10 x .-50 eingefüllt!");
     }
     System.out.println("Kassenwert = " + kasse.gibKassenWert());
@@ -21,6 +22,7 @@ public class KasseTest
     // fülle 5 x 2.-
     if (kasse.fuelleKasse(2.00, 5) == 5)
     {
+      kasse.fuelleKasseBestaetigung();
       System.out.println("Habe 5 x 2.- eingefüllt!");
     }
     System.out.println("Kassenwert = " + kasse.gibKassenWert());
@@ -32,6 +34,7 @@ public class KasseTest
     nDiff = kasse.fuelleKasse(0.10, 100);
     if (nDiff == 100)
     {
+      kasse.fuelleKasseBestaetigung();
       System.out.println("OK konnte 100 Münzen hinzufüen");
     }
     nDiff = kasse.fuelleKasse(0.10, 20);
