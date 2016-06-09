@@ -3,6 +3,7 @@ package warenautomat;
 import java.util.*;
 import java.util.Date;
 import warenautomat.*;
+import warenautomat.WarenInventar.WarenInfo;
 
 /**
  * Der Automat besteht aus 7 Drehtellern welche wiederum je aus 16 Fächer
@@ -27,7 +28,12 @@ public class Automat {
    * Hier werden alle Warentypen gespeichert.
    */
   private WarenTypSammlung m_oAlleWarentypen;
-    
+  
+  /**
+   * In diesem Objekt wird die Inventarisierung der Objekte durchgeführt
+   */
+  private WarenInventar m_oInventar;
+      
   /**
    * Mit dieser Funktion werden alle Anzeigen über alle
    * Drehteller aktalisiert
@@ -82,6 +88,8 @@ public class Automat {
         
     mKasse = new Kasse();
     
+    m_oInventar = new WarenInventar();
+       
   }
 
   /**
@@ -125,6 +133,9 @@ public class Automat {
     // das aktuelle Fach füllen
     Ware neueWare = new Ware(typ, pVerfallsDatum);
     mDrehteller[nInterneDrehtellerNr].FuelleFach(neueWare);
+    
+    // Inventarisierung nachführen
+    m_oInventar.Hinzufuegen(typ);
     
     // ware auch im gui anzeigen
     SystemSoftware.zeigeWareInGui(pDrehtellerNr, pWarenName, pVerfallsDatum);
@@ -223,8 +234,15 @@ public class Automat {
             
             // ware verbuchen
             gibKasse().WareVerbuchen(actWare);
+            
             // fach leeren
             actFach.Fachleeren();
+            
+            // inventar nachführen
+            m_oInventar.Entfernen(actWare.gibWarenTyp());
+            
+            // prüfen ob eine Bestellung ausgeführt werden muss
+            m_oInventar.pruefeUndMachBestellungFallsNoetig(actWare);
             
             aktualisiereFachAnzeigen(nInterneDrehtellerNr);
             
@@ -348,6 +366,8 @@ public class Automat {
    */
   public void konfiguriereBestellung(String pWarenName, int pGrenze, int pBestellAnzhal)
   {
+    BestellungsKonfig konfig = new BestellungsKonfig(pWarenName, pGrenze, pBestellAnzhal);
     
+    m_oInventar.FuegeBestellungsKonfigHinzu(konfig);
   }
 }
