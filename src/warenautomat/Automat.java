@@ -198,6 +198,7 @@ public class Automat {
   {
   
     int nInterneDrehtellerNr = pDrehtellerNr - 1;
+    
     Fach actFach = mDrehteller[nInterneDrehtellerNr].HoleFachVorDerTuere();
     
     // wenn das Fach nicht leer ist, weiter gehen
@@ -338,4 +339,15 @@ public class Automat {
     return mDrehteller[0].AktuellePosition() + 1;
   }
   
+  /**
+   * Konfiguration einer automatichen Bestellung.
+   * Der Automat setzt automatisch Bestellungen ab mittels SystemSoftware.bestellen.
+   * @param pWarenName
+   * @param pGrenze
+   * @param pBestellAnzhal
+   */
+  public void konfiguriereBestellung(String pWarenName, int pGrenze, int pBestellAnzhal)
+  {
+    
+  }
 }

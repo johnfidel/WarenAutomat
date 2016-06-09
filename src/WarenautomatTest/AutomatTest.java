@@ -21,6 +21,7 @@ public class AutomatTest
       automat.drehen();
       
       automat.fuelleFach(3, "Snickers", 3.50, df.parse("02.02.2017"));
+      automat.drehen();
       
       // Die Drehtellerposition auf den Anfang setzten
       while (!(automat.gibAktuelleDrehtellerPosition() == 1))
@@ -31,7 +32,7 @@ public class AutomatTest
       // alle 16 fächer iterieren
       for (int fachNr = 0; fachNr < 16; fachNr++)
       {
-        System.out.println("Fach #" + fachNr);
+        System.out.println("Fach #" + (fachNr + 1));
       
         for (int drehtellerNr = 0; drehtellerNr < 7; drehtellerNr++)
         {
@@ -41,13 +42,13 @@ public class AutomatTest
          
           if (aktuelleWare != null)
           {
-            System.out.println("Drehteller #" + drehtellerNr + " " + aktuelleWare.Name() + " " +
+            System.out.println("Drehteller #" + (drehtellerNr + 1) + " " + aktuelleWare.Name() + " " +
                                                                     aktuelleWare.Preis() + " " + 
                                                                     aktuelleWare.AblaufDatum());
           }
           else
           {
-            System.out.println("Drehteller #" + drehtellerNr + " ist leer.");            
+            System.out.println("Drehteller #" + (drehtellerNr + 1) + " ist leer.");            
           }
         }
         

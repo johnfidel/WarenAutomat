@@ -93,7 +93,7 @@ public class Drehteller
   {
     int nFachNr = m_nActFach + 1;
     if (nFachNr >= ANZAHL_FAECHER) { nFachNr = 0; }
-    
+        
     return m_oFaecher[nFachNr];
   }
   
