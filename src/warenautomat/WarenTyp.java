@@ -1,8 +1,6 @@
 
 package warenautomat;
 
-import java.util.Date;
-
 /**
  * Diese Klasse stellt eine Ware dar
  */

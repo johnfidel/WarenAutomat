@@ -1,8 +1,6 @@
 package warenautomat;
 
-import java.util.*;
 import java.util.Date;
-import warenautomat.*;
 
 /**
  * Der Automat besteht aus 7 Drehtellern welche wiederum je aus 16 Fächer
@@ -27,7 +25,12 @@ public class Automat {
    * Hier werden alle Warentypen gespeichert.
    */
   private WarenTypSammlung m_oAlleWarentypen;
-    
+  
+  /**
+   * In diesem Objekt wird die Inventarisierung der Objekte durchgeführt
+   */
+  private WarenInventar m_oInventar;
+      
   /**
    * Mit dieser Funktion werden alle Anzeigen über alle
    * Drehteller aktalisiert
@@ -39,7 +42,7 @@ public class Automat {
     if (actWare != null)
     {
       
-      double dblPreis = (double)(actWare.Preis() / 100);
+      double dblPreis = (double)(actWare.Preis()) / 100.0;
       SystemSoftware.zeigeWarenPreisAn(i_nDrehteller + 1, dblPreis);
       SystemSoftware.zeigeWareInGui(i_nDrehteller + 1, actWare.Name(), actWare.AblaufDatum());
         
@@ -82,6 +85,8 @@ public class Automat {
         
     mKasse = new Kasse();
     
+    m_oInventar = new WarenInventar();
+       
   }
 
   /**
@@ -126,9 +131,13 @@ public class Automat {
     Ware neueWare = new Ware(typ, pVerfallsDatum);
     mDrehteller[nInterneDrehtellerNr].FuelleFach(neueWare);
     
+    // Inventarisierung nachführen
+    m_oInventar.Hinzufuegen(typ);
+    
     // ware auch im gui anzeigen
     SystemSoftware.zeigeWareInGui(pDrehtellerNr, pWarenName, pVerfallsDatum);
     
+    aktualisiereFachAnzeigen(nInterneDrehtellerNr);
   }
 
   /**
@@ -151,8 +160,6 @@ public class Automat {
    */
   public void drehen() 
   {
-    double dblPreis;
-
     // auch im GUI drehen
     SystemSoftware.dreheWarenInGui();
 
@@ -161,10 +168,7 @@ public class Automat {
     {
       // aktueller Dreteller drehen
       mDrehteller[i].Drehen();
-      
-      // preisanzeige aktualisieren
-      Ware aktuelleWare = mDrehteller[i].HoleFachVorDerTuere().GetWare();
-    
+        
       // anzeige für den aktuellen Drehteller aktualisieren
       aktualisiereFachAnzeigen(i);
     } 
@@ -197,6 +201,7 @@ public class Automat {
   {
   
     int nInterneDrehtellerNr = pDrehtellerNr - 1;
+    
     Fach actFach = mDrehteller[nInterneDrehtellerNr].HoleFachVorDerTuere();
     
     // wenn das Fach nicht leer ist, weiter gehen
@@ -221,8 +226,15 @@ public class Automat {
             
             // ware verbuchen
             gibKasse().WareVerbuchen(actWare);
+            
             // fach leeren
             actFach.Fachleeren();
+            
+            // inventar nachführen
+            m_oInventar.Entfernen(actWare.gibWarenTyp());
+            
+            // prüfen ob eine Bestellung ausgeführt werden muss
+            m_oInventar.pruefeUndMachBestellungFallsNoetig(actWare.Name());
             
             aktualisiereFachAnzeigen(nInterneDrehtellerNr);
             
@@ -240,6 +252,10 @@ public class Automat {
           SystemSoftware.zeigeZuWenigGeldAn();
         }
       }
+    }
+    else
+    {
+      System.out.println("Automat::oeffnen() --> Fach leer!");
     }
     
     return false;  
@@ -303,22 +319,11 @@ public class Automat {
    */
   public int gibVerkaufsStatistik(String pName, Date pDatum) 
   {
-    int nZaehler = 0;
-    Kasse kasse = gibKasse();
     
-    for (Transaktion trans: kasse.gibVerkaufsDetails().VerkaufteWare())
-    {
-      // namen der Ware überprüfen
-      if (trans.getWare().Name().equals(pName))
-      {
-        // prüfen ob das Datum innerhalb des gewünschten Bereiches liegt
-        if (trans.getVerkaufsdatum().after(pDatum))
-        {
-          nZaehler++;
-        }
-      }
-    }
-    return nZaehler;
+    int nAnzahlVerkaufte = gibKasse().gibVerkaufsDetails().gibAnzahlVerkaufte(pName, pDatum);
+    
+    //TODO anzeige im GUI???
+    return nAnzahlVerkaufte;
     
   }
   
@@ -344,4 +349,17 @@ public class Automat {
     return mDrehteller[0].AktuellePosition() + 1;
   }
   
+  /**
+   * Konfiguration einer automatichen Bestellung.
+   * Der Automat setzt automatisch Bestellungen ab mittels SystemSoftware.bestellen.
+   * @param pWarenName
+   * @param pGrenze
+   * @param pBestellAnzhal
+   */
+  public void konfiguriereBestellung(String pWarenName, int pGrenze, int pBestellAnzhal)
+  {
+    BestellungsKonfig konfig = new BestellungsKonfig(pWarenName, pGrenze, pBestellAnzhal);
+    
+    m_oInventar.FuegeBestellungsKonfigHinzu(konfig);
+  }
 }
