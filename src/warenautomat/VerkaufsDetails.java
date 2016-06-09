@@ -74,10 +74,12 @@ public class VerkaufsDetails
       if (trans.getWare().Name().equals(pName))
       {
         // prüfen ob das Datum innerhalb des gewünschten Bereiches liegt
-        if (trans.getVerkaufsdatum().after(pStartDatum))
+        if ((!pStartDatum.before(trans.getVerkaufsdatum())) ||
+            (pStartDatum == trans.getVerkaufsdatum()))
         {
           nZaehler++;
         }
+        
       }
     }
     return nZaehler;

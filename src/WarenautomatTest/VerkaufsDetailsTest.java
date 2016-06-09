@@ -26,7 +26,7 @@ public class VerkaufsDetailsTest
     Transaktion trans1 = new Transaktion(einMars, df.parse("06.06.2016"));
     Transaktion trans2 = new Transaktion(ein2esMars, df.parse("07.06.2016"));
     Transaktion trans3 = new Transaktion(ein3esMars, df.parse("08.06.2016"));
-    Transaktion trans4 = new Transaktion(einSnickers, df.parse("09.06.2016"));
+    Transaktion trans4 = new Transaktion(einSnickers, df.parse("03.06.2016"));
     
     VerkaufsDetails details = new VerkaufsDetails();
     details.AddTransaktion(trans1);

@@ -60,13 +60,8 @@ public class Drehteller
     int nFachNr = m_nActFach + 1;
     if (nFachNr >= ANZAHL_FAECHER) { nFachNr = 0; }
     
-    // wenn das Fach noch leer ist, darf die Ware eingelegt werden.
-    if (m_oFaecher[nFachNr].IsEmpty())
-    {
-      m_oFaecher[nFachNr].SetWare(i_oProdukt);
-      
-      return true;
-    }
+    // inhalt des Fachs wird einfach überschreiben
+    m_oFaecher[nFachNr].SetWare(i_oProdukt);
     
     return false;
   }
