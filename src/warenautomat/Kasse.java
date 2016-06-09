@@ -1,8 +1,5 @@
 package warenautomat;
 
-
-import java.util.ArrayList;
-
 import warenautomat.SystemSoftware;
 
 /**

@@ -2,9 +2,6 @@ package warenautomat;
 
 import java.util.*;
 
-import warenautomat.*;
-import warenautomat.WarenInventar.WarenInfo;
-
 /**
  * Diese Klasse kümmert sich um die Inventarisierung der Ware
  * 

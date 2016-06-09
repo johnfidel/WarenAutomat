@@ -66,7 +66,21 @@ public class AutomatTest
       // gesammt warenbetrag abfragen
       System.out.println("Gesammt Warenwert: " + automat.gibTotalenWarenWert() + " " + SystemSoftware.gibAktuellesDatum());
           
-          
+      // preis der Ware Ändern
+      automat.fuelleFach(4, "Mars", 3.50, df.parse("02.01.2017"));
+
+      //Datum auf heute
+      SystemSoftware.setzeAktuellesDatum(df.parse("01.01.2000"));
+
+      // gesammt warenbetrag abfragen
+      System.out.println("Gesammt Warenwert: " + automat.gibTotalenWarenWert() + " " + SystemSoftware.gibAktuellesDatum());
+
+      //Datum auf heute
+      SystemSoftware.setzeAktuellesDatum(df.parse("01.01.2020"));
+
+      // gesammt warenbetrag abfragen
+      System.out.println("Gesammt Warenwert: " + automat.gibTotalenWarenWert() + " " + SystemSoftware.gibAktuellesDatum());
+      
     }
   
   }

@@ -1,6 +1,5 @@
 package WarenautomatTest;
 
-import java.util.*;
 import java.text.ParseException;
 
 import warenautomat.*;

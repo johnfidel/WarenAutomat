@@ -1,9 +1,6 @@
 package warenautomat;
 
-import java.util.*;
 import java.util.Date;
-import warenautomat.*;
-import warenautomat.WarenInventar.WarenInfo;
 
 /**
  * Der Automat besteht aus 7 Drehtellern welche wiederum je aus 16 Fächer
@@ -163,8 +160,6 @@ public class Automat {
    */
   public void drehen() 
   {
-    double dblPreis;
-
     // auch im GUI drehen
     SystemSoftware.dreheWarenInGui();
 
@@ -173,10 +168,7 @@ public class Automat {
     {
       // aktueller Dreteller drehen
       mDrehteller[i].Drehen();
-      
-      // preisanzeige aktualisieren
-      Ware aktuelleWare = mDrehteller[i].HoleFachVorDerTuere().GetWare();
-    
+        
       // anzeige für den aktuellen Drehteller aktualisieren
       aktualisiereFachAnzeigen(i);
     } 
@@ -242,7 +234,7 @@ public class Automat {
             m_oInventar.Entfernen(actWare.gibWarenTyp());
             
             // prüfen ob eine Bestellung ausgeführt werden muss
-            m_oInventar.pruefeUndMachBestellungFallsNoetig(actWare);
+            m_oInventar.pruefeUndMachBestellungFallsNoetig(actWare.Name());
             
             aktualisiereFachAnzeigen(nInterneDrehtellerNr);
             
